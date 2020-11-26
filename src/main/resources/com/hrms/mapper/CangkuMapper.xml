@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.CangkuMapper">
+
+    <resultMap id="cangkuResult" type="com.hrms.bean.Baozhuang">
+        <result column="productionSN" property="productionSN"></result>
+        <result column="model" property="model"></result>
+        <result column="mo_id" property="moId"></result>
+        <result column="Nbox_id" property="nboxId"></result>
+        <result column="Wbox_id"  property="wboxId"></result>
+    </resultMap>
+
+
+    <!--根据外箱号批量导入到仓库的数据库中-->
+    <insert id="insertCangkuByWbox" parameterType="java.lang.String" >
+
+     insert into tb_cangku(productionSN,model,mo_id,Nbox_id,Wbox_id,time,operator) select productionSN,model,mo_id,Nbox_id,Wbox_id,wbox_time,wbox_operator from tb_pack WHERE Wbox_id =#{wbox} AND operation='无'
+
+    </insert>
+
+
+    <!-- 根据外箱号查询所有数据   入库查询-->
+    <select id="selectWbox"  parameterType="java.lang.String"  resultMap="cangkuResult">
+        SELECT *
+        FROM tb_cangku
+        where Wbox_id=#{wboxId}
+    </select>
+
+    <!--插入仓库数据库-->
+    <insert id="insertCangKu" >
+        INSERT INTO
+        tb_cangku(productionSN, model, time, mo_id, operator, Nbox_id)
+        VALUES (#{productionSN},#{model},now(),#{moId},#{operator},#{nboxId})
+    </insert>
+
+
+    <!--根据sn查询内箱号  仓库外箱打印使用-->
+    <select id="selectNboxBySn" parameterType="java.lang.String" resultMap="cangkuResult">
+        select Nbox_id ,mo_id
+        from tb_cangku
+        where productionSN=#{sn}
+	    ORDER BY  time DESC limit 1
+    </select>
+
+    <!--根据内箱号查询数量 仓库外箱打印使用-->
+    <select id="selectNboxNumber" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT   COUNT(*)  FROM   tb_cangku   WHERE  Nbox_id = #{nboxId}
+    </select>
+
+    <!--根据内箱号查询sn 仓库内箱打印使用-->
+    <select id="selectSnByNbox"  resultType="java.lang.String">
+        SELECT
+            productionSN
+        FROM
+        	tb_cangku
+        WHERE
+        	Nbox_id = #{nbox}
+    </select>
+
+    <!--更改内箱的外箱号-->
+    <update id="updateWbox">
+        update tb_cangku
+        SET Wbox_id=#{wboxId}
+        WHERE Nbox_id=#{nboxId}
+    </update>
+
+
+    <!--插入内箱变化记录表   拆内箱使用-->
+    <insert id="insertCangKuRecord" >
+        INSERT INTO
+        tb_recordcangku(oldNbox, newNbox, nboxTime, oldWbox, operator)
+        VALUES (#{oldNbox},#{newNbox},now(),#{oldWbox},#{operator})
+    </insert>
+
+
+    <!-- 先检查是不是经过拆箱记录修改信息了-->
+    <select id="selecteCangKuRecordByNewNbox" parameterType="com.hrms.bean.CangkuRecord" resultType="com.hrms.bean.CangkuRecord">
+         select * from  tb_recordcangku where newNbox=#{newNbox}
+    </select>
+
+    <!--直接根据新的外箱，插入新的外箱-->
+    <update id="updateCangKuRecordByNewWbox" >
+     update tb_recordcangku  set newWbox=#{newWbox},wboxTime=now() where newNbox=#{newNbox}
+    </update>
+
+    <!--根据未拆箱的内箱号 来查出旧外箱号-->
+    <select id="selectOldWboxByOldNbox"  resultType="java.lang.String">
+     select distinct  Wbox_id  from  tb_cangku where Nbox_id=#{oldNbox}
+    </select>
+
+
+    <!-- 更改未拆箱的内箱号 的外箱号 进行记录-->
+    <insert id="insertRecordByNotChaixiang" >
+        INSERT INTO tb_recordcangku(oldNbox,oldWbox,newWbox,wboxTime)  values (#{oldNbox},#{oldWbox}, #{newWbox},now())
+    </insert>
+</mapper>

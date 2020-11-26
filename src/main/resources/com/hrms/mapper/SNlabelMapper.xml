@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hrms.mapper.SNlabelMapper">
+
+    <insert id="insertlabel" >
+        insert into tb_snlabel
+        (productSN, WWN, sn_rule,wwn_rule, model, mo_id, operator, operate_time,erp)
+        values (#{productSN},#{WWN},#{snrulename},#{wwnrulename},#{model},#{moId},#{operator},now(),#{erp})
+    </insert>
+
+    <insert id="insertsnrule" >
+        INSERT into tb_snrule
+        (snrule_name, sn_length, erp, snrule_start, tb_snrule.over, rule, rule_mesg, snrule_time)
+        VALUES (#{snrulename},#{snlength},#{erp},#{start},#{over},#{rule},#{mesg},now())
+    </insert>
+
+    <insert id="insertwwnrule" >
+        INSERT into tb_wwnrule
+        (wwnrule_name, wwn_length, wwnrule_start, tb_wwnrule.over, rule, rule_mesg, wwnrule_time)
+        VALUES (#{wwnrulename},#{wwnlength},#{wwnstart},#{wwnover},#{wwnrule},#{wwnmesg},now())
+    </insert>
+
+    <select id="selectsnrule" resultType="com.hrms.bean.SNlabel">
+        select DISTINCT(snrule_name) snrulename,sn_length snlength,erp erp
+        from tb_snrule
+    </select>
+
+    <select id="selectwwnrule" resultType="com.hrms.bean.SNlabel">
+        select DISTINCT(wwnrule_name) wwnrulename,wwn_length wwnlength
+        from tb_wwnrule
+    </select>
+
+
+    <select id="selectsnrulebyname" resultType="com.hrms.bean.SNlabel" parameterType="java.lang.String">
+        select snrule_start start, tb_snrule.over , rule, rule_mesg mesg
+        from tb_snrule
+        where snrule_name=#{snrulename}
+        order by snrule_start
+    </select>
+
+    <select id="selectwwnrulebyname" resultType="com.hrms.bean.SNlabel" parameterType="java.lang.String">
+        select wwnrule_start wwnstart, tb_wwnrule.over wwnover , rule wwnrule, rule_mesg wwnmesg
+        from tb_wwnrule
+        where wwnrule_name=#{wwnrulename}
+        order by wwnrule_start
+    </select>
+
+    <!--SN日结-->
+    <select id="selectsnbytoday" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_snlabel
+        WHERE
+        	sn_rule = #{snrulename}
+        AND operate_time BETWEEN DATE_FORMAT(
+        	CURDATE(),
+        	'%Y-%m-%d %H:%i:%s'
+        )
+        AND NOW()
+    </select>
+    <!--SN月结-->
+    <select id="selectsnbymonth" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_snlabel
+        WHERE
+        	sn_rule =  #{snrulename}
+        AND DATE_FORMAT(operate_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+    </select>
+    <!--SN周结-->
+    <select id="selectsnbyweek" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_snlabel
+        WHERE
+        	sn_rule =  #{snrulename}
+        AND YEARWEEK(
+        	DATE_FORMAT(operate_time, '%Y-%m-%d')
+        ) = YEARWEEK(NOW());
+    </select>
+
+    <!--WWN日结-->
+    <select id="selectwwnbytoday" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_snlabel
+        WHERE
+        	wwn_rule = #{wwnrulename}
+        AND operate_time BETWEEN DATE_FORMAT(
+        	CURDATE(),
+        	'%Y-%m-%d %H:%i:%s'
+        )
+        AND NOW()
+    </select>
+    <!--WWN月结-->
+    <select id="selectwwnbymonth" parameterType="java.lang.String" resultType="java.lang.String">
+        SELECT
+        WWN
+        FROM
+        tb_snlabel
+        WHERE
+        wwn_rule = 'WWN'
+        ORDER BY WWN desc
+        limit 1
+        <!--AND DATE_FORMAT(operate_time, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')-->
+    </select>
+    <!--WWN周结-->
+    <select id="selectwwnbyweek" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_snlabel
+        WHERE
+        	wwn_rule =  #{wwnrulename}
+        AND YEARWEEK(
+        	DATE_FORMAT(operate_time, '%Y-%m-%d')
+        ) = YEARWEEK(NOW());
+    </select>
+
+    <update id="update_moremain"  parameterType="java.lang.String">
+        UPDATE
+        tb_mo
+        SET
+        mo_remain_label=mo_remain_label-1
+        WHERE
+        mo_id = #{moId}
+    </update>
+
+
+</mapper>

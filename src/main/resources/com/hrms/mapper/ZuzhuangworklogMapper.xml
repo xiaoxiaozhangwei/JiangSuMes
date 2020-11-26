@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.ZuzhuangworklogMapper">
+
+    <insert id="add"  parameterType="com.hrms.bean.Zuzhuangworklog">
+        insert  into tb_linkwork(line_number,mo,A01name1,A01name2,A02name1,A02name2,A03name1,A03name2,A04name1,A04name2,A05name1,A05name2,FW,Time)
+        values(#{line_number},#{mo},#{A01name1},#{A01name2},#{A02name1},#{A02name2},#{A03name1},#{A03name2},#{A04name1},#{A04name2},#{A05name1},#{A05name2},#{FW},now())
+    </insert>
+
+
+</mapper>

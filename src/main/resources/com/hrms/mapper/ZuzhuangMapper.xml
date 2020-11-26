@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.ZuzhuangMapper">
+    <sql id="table_name">
+        tb_link
+    </sql>
+    <sql id="select_fields">
+        product_SN,PCBA_SN,operation,device_times,operator,date,device_id
+    </sql>
+
+    <resultMap id="linkResult" type="com.hrms.bean.Zuzhuang">
+        <id column="link_id" property="linkId"></id>
+        <result column="product_SN" property="productionSN"></result>
+        <result column="PCBA_SN" property="pcbaSN"></result>
+        <result column="operation" property="operation"></result>
+        <result column="device_times" property="times"></result>
+        <result column="operator" property="operator"></result>
+        <result column="date" property="getTime"></result>
+        <result column="device_id" property="deviceId"></result>
+        <result column="mo_id" property="moId"></result>
+        <result column="device_name" property="devicename"></result>
+        <result column="mo_num" property="monum"></result>
+        <result column="mo_remain" property="moremain"></result>
+        <result column="gys" property="gys"></result>
+        <result column="line" property="line"></result>
+    </resultMap>
+
+
+    <update id="updatemo" >
+        UPDATE
+        tb_mo
+        SET
+        mo_remain=mo_remain-1
+        WHERE
+        mo_id like #{moId}
+    </update>
+
+    <update id="updatedevice">
+        UPDATE
+        tb_device
+        SET
+        times=#{times}+1
+        WHERE
+        device_id=#{deviceId}
+    </update>
+
+    <select id="selectProByName" parameterType="String" resultType="com.hrms.bean.Zuzhuang">
+        SELECT
+        link_id, product_SN, PCBA_SN, operation, device_times, operator, "date", device_id, mo_id, device_name, mo_num, mo_remain, gys
+        FROM
+        tb_link
+        WHERE
+        product_SN = #{productionSN}
+        AND
+        mo_id = #{mo}
+        AND
+        operation='正确'
+    </select>
+    <select id="selectPcba" parameterType="String" resultType="com.hrms.bean.Zuzhuang">
+        SELECT
+        link_id, product_SN, PCBA_SN, operation, device_times, operator, "date", device_id, mo_id, device_name, mo_num, mo_remain, gys
+        FROM
+        tb_link
+        WHERE
+        PCBA_SN = #{pcbaSN}
+        AND
+        operation='正确'
+        and mo_id=#{moid}
+    </select>
+
+    <select id="selectlink" parameterType="com.hrms.bean.Zuzhuang" resultType="com.hrms.bean.Zuzhuang" resultMap="linkResult">
+        SELECT *
+        FROM tb_link
+        WHERE 1=1
+        <if test="moId!=null and moId !=''">
+            AND mo_id=#{moId}
+        </if>
+        <if test="operator!=null and operator !=''">
+            AND operator=#{operator}
+        </if>
+        <if test="devicename !=null and devicename !=''">
+            AND device_name=#{devicename}
+        </if>
+        <if test="gys!=null and gys !=''">
+            AND gys=#{gys}
+        </if>
+        <if test="productionSN!=null and productionSN!=''">
+            AND product_SN=#{productionSN}
+        </if>
+        <if test="pcbaSN!=null and pcbaSN!=''">
+            AND PCBA_SN=#{pcbaSN}
+        </if>
+        <if test="getTime!=null and getTime!=''">
+            AND tb_link.date BETWEEN #{getTime}' 00:00:00' AND #{getTime}' 23:59:59'
+        </if>
+        <if test="operation!=null and operation !=''">
+            AND operation=#{operation}
+        </if>
+
+    </select>
+
+    <select id="selectAll" parameterType="com.hrms.bean.Zuzhuang" resultMap="linkResult" resultType="com.hrms.bean.Zuzhuang">
+        SELECT *
+        FROM tb_link
+    </select>
+
+    <select id="selectcount" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_link
+        WHERE
+        	operation = '正确'
+        AND date BETWEEN DATE_FORMAT(
+        	CURDATE(),
+        	'%Y-%m-%d %H:%i:%s'
+        )
+        AND NOW()
+    </select>
+
+
+    <!-- 根据线别选择组装电子看板数据 -->
+    <select id="selectLinkbyline" resultType="java.lang.Integer" parameterType="java.lang.String">
+        select count(*)
+         FROM
+        	tb_link
+        WHERE
+        	operation = '正确'
+        	and
+              date(date) = curdate()
+              and  line=#{line}
+    </select>
+
+</mapper>

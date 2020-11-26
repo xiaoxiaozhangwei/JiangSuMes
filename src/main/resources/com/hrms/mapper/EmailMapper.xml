@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.EmailMapper">
+
+
+    <insert id="insertEmail" parameterType="com.hrms.bean.Email">
+        insert into tb_mail(account,name,groupEmail)
+    values (#{account},#{name},#{groupEmail})
+</insert>
+
+    <select id="selectEmail" resultType="com.hrms.bean.Email" parameterType="java.lang.String">
+        SELECT account,name,groupEmail
+        FROM tb_mail
+        <where>
+        <if test="_parameter != null and _parameter != '' ">
+             groupEmail=#{_parameter}
+        </if>
+        </where>
+    </select>
+
+
+<delete id="deleteEmail" parameterType="java.lang.String">
+    delete  from  tb_mail where account=#{account}
+</delete>
+
+    <delete id="deleteEmail2" parameterType="java.lang.String">
+    delete  from  tb_mail where name=#{name}
+</delete>
+
+
+</mapper>

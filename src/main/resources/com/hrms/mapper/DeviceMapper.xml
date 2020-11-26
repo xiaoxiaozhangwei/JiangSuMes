@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.DeviceMapper">
+    <sql id="table_name">
+        tb_device
+    </sql>
+    <sql id="select_fields">
+        device_name,times
+    </sql>
+    <resultMap id="DeviceResult" type="com.hrms.bean.Zuzhuang">
+        <id column="tb_device.device_id" property="deviceId"></id>
+        <result column="device_name" property="deviceId"></result>
+        <result column="times" property="times"></result>
+    </resultMap>
+
+    <select id="getdeviceById" parameterType="java.lang.Integer" resultType="com.hrms.bean.Device">
+        SELECT
+         times
+        FROM
+        tb_device
+        WHERE
+        device_id = #{deviceId}
+    </select>
+</mapper>

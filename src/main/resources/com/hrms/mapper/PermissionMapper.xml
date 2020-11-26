@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.PermissionMapper">
+
+
+    <select id="queryPermissionsByUserName" resultType="com.hrms.bean.Permission">
+   select distinct t1.* from permission t1 inner join role_permission t2 inner join user_role t3
+   	on(t1.perid=t2.perid and t2.roleid=t3.roleid)
+   	where t3.username=#{username}
+</select>
+
+
+
+</mapper>

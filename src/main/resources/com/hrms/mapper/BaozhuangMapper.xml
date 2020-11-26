@@ -1,0 +1,293 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.BaozhuangMapper">
+    <sql id="table_name">
+        tb_pack
+    </sql>
+
+    <resultMap id="packResult" type="com.hrms.bean.Baozhuang">
+        <id column="pack_id"          property="pack_id"></id>
+        <result column="productionSN" property="productionSN"></result>
+        <result column="model" property="model"></result>
+        <result column="operation" property="operation"></result>
+        <result column="time" property="time"></result>
+        <result column="mo_id" property="moId"></result>
+        <result column="mo_num" property="monum"></result>
+        <result column="mo_remain" property="moremain"></result>
+        <result column="operator" property="operator"></result>
+        <result column="Nbox_id" property="nboxId"></result>
+        <result column="Wbox_id"  property="wboxId"></result>
+    </resultMap>
+
+    <insert id="insertpack" >
+         INSERT INTO
+        tb_pack
+        (productionSN, model, operation, time, mo_id, mo_num, mo_remain, operator, Nbox_id,mesg,line)
+        VALUES (#{productionSN},#{model},#{operation},now(),#{moId},#{monum},#{moremain}-1,#{operator},#{nboxId},#{mesg},#{line})
+    </insert>
+
+    <select id="production" resultType="java.lang.Integer">
+        SELECT  count(check_id)
+        FROM tb_check
+        WHERE productSN=#{productionSN}
+        AND operation='无'
+    </select>
+
+    <select id="count_Nbox" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT(Nbox_id))
+        FROM tb_pack
+        where time BETWEEN DATE_FORMAT(CURDATE(),'%Y-%m-%d %H:%i:%s')AND NOW()
+        AND Nbox_id!=''
+        AND operation='无'
+    </select>
+
+    <select id="selectProByName" parameterType="com.hrms.bean.Baozhuang" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(pack_id)
+        FROM
+        	tb_pack
+        WHERE
+        	productionSN = #{productionSN}
+        AND operation = '无'
+        AND mesg=#{mesg}
+        AND mo_id=#{moId}
+    </select>
+
+
+    <select id="packSN" resultMap="packResult">
+        SELECT
+            productionSN
+        FROM
+        	tb_pack
+        WHERE
+        	Nbox_id = #{nboxId}
+        AND operation = '无'
+    </select>
+
+    <select id="count_Wbox" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT(Wbox_id))
+        FROM tb_pack
+        where time BETWEEN DATE_FORMAT(CURDATE(),'%Y-%m-%d %H:%i:%s')AND NOW()
+        AND Wbox_id !=''
+    </select>
+
+    <select id="NboxExists" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_pack
+        WHERE
+        	(
+        		Nbox_id = #{nboxId}
+        		AND operation = '无'
+        		AND Wbox_id = ''
+        	)
+        OR (
+        	Nbox_id = #{nboxId}
+        	AND operation = '无'
+        	AND Wbox_id IS NULL
+        )
+    </select>
+
+    <update id="updateWbox" parameterType="java.lang.String">
+        update tb_pack
+        SET Wbox_id=#{wboxId},
+            wbox_time=now(),
+            wbox_operator=#{operator}
+        WHERE Nbox_id=#{nboxId}
+    </update>
+
+    <select id="selectNboxByPro" parameterType="java.lang.String" resultType="com.hrms.bean.Baozhuang">
+        select Nbox_id nboxId,mo_id moId
+        from tb_pack
+        where productionSN=#{productionSN}
+        and operation='无'
+        ORDER BY
+        	pack_id DESC
+        LIMIT 1
+    </select>
+
+    <select id="selectCountPro" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_pack
+        WHERE
+        	operation = '无'
+        AND time BETWEEN DATE_FORMAT(
+        	CURDATE(),
+        	'%Y-%m-%d %H:%i:%s'
+        )
+        AND NOW()
+    </select>
+    <select id="selectCountByNbox" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+        	tb_pack
+        WHERE
+        	Nbox_id = #{nboxId}
+        AND operation = '无'
+    </select>
+
+
+     <!-- 根据外箱号查询所有数据-->
+    <select id="selectWbox"  parameterType="java.lang.String"  resultType="com.hrms.bean.Baozhuang" resultMap="packResult">
+        SELECT *
+        FROM tb_pack
+        where Wbox_id=#{wboxId}
+        AND  operation ='无'
+    </select>
+
+
+    <!-- 根据sn查询外箱号-->
+    <select id="selectWboxnumber" parameterType="java.lang.String" resultType="java.lang.String">
+        select Wbox_id
+        from tb_pack
+        where productionSN=#{productionSN}
+        and operation='无'
+        ORDER BY pack_id
+        DESC
+        LIMIT 1
+    </select>
+
+
+    <insert id="insertpack2" >
+        INSERT INTO
+        tb_pack
+        (productionSN, model, operation, time, mo_id, mo_num, mo_remain, operator, Nbox_id,Wbox_id)
+        VALUES (#{productionSN},#{model},'无',now(),#{moId},#{monum},#{moremain}-1,#{operator},#{nboxId},#{wboxId})
+    </insert>
+    <update id="update_moremain02"  >
+        UPDATE
+        tb_mo
+        SET
+        mo_remain0=mo_remain0-200
+        WHERE
+        mo_id = #{moId}
+    </update>
+
+    <!--内包装操作信息修改-->
+    <update id="updateModal">
+        update tb_pack
+        SET operation='错误'
+        where productionSN=#{productionSN}
+        LIMIT 1
+    </update>
+
+
+<!--包装信息多条件查询-->
+    <select id="selectrelateBaoZhuang"  parameterType="com.hrms.bean.Baozhuang" resultMap="packResult">
+        SELECT *
+        FROM tb_pack
+        <where>
+            <if test="moId !=null and moId !=''">
+                AND mo_id=#{moId}
+            </if>
+            <if test="nboxId !=null and nboxId !=''">
+                AND Nbox_id=#{nboxId}
+            </if>
+            <if test="wboxId !=null and wboxId !=''">
+                AND Wbox_id=#{wboxId}
+            </if>
+            <if test="operator!=null and operator !=''">
+                AND operator=#{operator}
+            </if>
+            <if test="productionSN!=null and productionSN!=''">
+                AND productionSN=#{productionSN}
+            </if>
+            <if test="model!=null and model !=''">
+                AND model=#{model}
+            </if>
+            <if test="time!=null and time !=''">
+                AND tb_pack.time BETWEEN #{time}' 00:00:00' AND #{time}' 23:59:59'
+            </if>
+            <if test="operation!=null and operation !=''">
+                AND operation=#{operation}
+            </if>
+        </where>
+    </select>
+
+    <!--根据外箱号查询内箱号-->
+    <select id="selectNBoxByWbox" resultType="java.lang.String">
+        select distinct Nbox_id
+        from tb_pack
+        where Wbox_id=#{wboxId}
+    </select>
+
+    <select id="selecthismonthmodel" resultType="java.lang.String">
+        SELECT DISTINCT
+        	model
+        FROM
+        	tb_pack
+        WHERE
+            mo_id not like 'T600%'
+        and
+            operation='无'
+        and (Wbox_id!=''
+        OR Wbox_id IS NOT NULL )
+        and
+        	DATE_FORMAT(tb_pack.time, '%Y%m') = DATE_FORMAT(#{daytime}, '%Y%m')
+    </select>
+    <select id="selectrightcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM
+        	tb_pack
+        WHERE
+            operation='无'
+        and model=#{model}
+        and Wbox_id like #{daytime}
+
+        and mesg!='%不良'
+
+    </select>
+    <select id="selectwrongcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM
+        	tb_pack
+        WHERE
+            operation='无'
+        and model=#{model}
+        and Wbox_id like #{daytime}
+        and mesg ='%不良'
+    </select>
+
+
+
+    <!--根据线别 查询看板所要数据   sn数量-->
+    <select id="selectSnCountByLine" resultType="java.lang.Integer">
+         SELECT  count(*)
+        FROM
+	    tb_pack
+        WHERE
+	    line=#{line}
+        AND date(time) = curdate()
+         and operation='无'
+    </select>
+
+
+    <!--根据线别 查询看板所要数据   内箱数量-->
+    <select id="selectNboxCountByLine" resultType="java.lang.Integer">
+        select
+        count(distinct Nbox_id)
+        FROM  tb_pack
+       where
+        line=#{line}
+        and date(time) = curdate()
+         and operation='无'
+    </select>
+
+
+    <!--根据线别 查询看板所要数据   外箱数量-->
+    <select id="selectWboxCountByLine" resultType="java.lang.Integer">
+        select
+        count(distinct Wbox_id)
+        FROM  tb_pack
+        where
+        line=#{line}
+        and  date(time) = curdate()
+        and operation='无'
+    </select>
+
+</mapper>

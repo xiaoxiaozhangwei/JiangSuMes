@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.MaterialShipmentMapper">
+
+    <sql id="table_name">
+        tb_materialShipment
+    </sql>
+
+    <resultMap id="materialShipmentResult" type="com.hrms.bean.MaterialShipment">
+        <id column="id"          property="id"></id>
+        <result column="erp" property="erp"></result>
+        <result column="wbox" property="wbox"></result>
+        <result column="num" property="num"></result>
+        <result column="storageArea" property="storageArea"></result>
+        <result column="stock" property="stock"></result>
+        <result column="operator" property="operator"></result>
+        <result column="time" property="time"></result>
+        <result column="mo" property="mo"></result>
+        <result column="purchaseNumber" property="purchaseNumber"></result>
+        <result column="applicant" property="applicant"></result>
+        <result column="client" property="client"></result>
+        <result column="productNature" property="productNature"></result>
+        <result column="information" property="information"></result>
+        <result column="approval" property="approval"></result>
+        <result column="comments" property="comments"></result>
+
+    </resultMap>
+
+    <insert id="insertMaterialShipment"  parameterType="com.hrms.bean.MaterialShipment">
+        insert into tb_materialshipment
+        (erp,wbox,num,storageArea,stock,operator,time,mo,purchaseNumber,one,client,productNature,information,approval,comments)
+        values
+        (#{erp},#{wbox},#{num},#{storageArea},#{stock},#{operator},NOW(),#{mo},#{purchaseNumber},#{applicant},#{client},#{productNature},#{information},#{approval},#{comments})
+    </insert>
+
+</mapper>

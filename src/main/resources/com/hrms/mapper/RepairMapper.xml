@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.RepairMapper">
+    <select id="selectpcbabyssd" resultType="java.lang.String" parameterType="java.lang.String">
+        select PCBA_SN
+        from tb_link
+        where product_SN=#{ssdsn}
+        ORDER BY link_id desc
+        limit 1
+    </select>
+    <select id="selectfwbyssd" resultType="java.lang.String" parameterType="java.lang.String">
+        select fw
+        from tb_oc4
+        where sn=#{ssdsn}
+        ORDER BY id desc
+        limit 1
+    </select>
+
+    <insert id="saverepairmesg" parameterType="com.hrms.bean.Repair">
+        insert into tb_repair
+        (ssd_sn, pcba_sn,fw, error_date, error_area, errorcode  )
+        values
+        (#{ssd_sn},#{pcba_sn},#{fw},#{error_date},#{error_area},#{errorcode})
+    </insert>
+
+    <select id="showrepairmesg" resultType="com.hrms.bean.Repair">
+        select *
+        from tb_repair
+        where  ssd_sn=#{ssd_sn}
+        and pcba_sn=#{pcba_sn}
+    </select>
+
+    <update id="updaterepairmesg">
+        update tb_repair
+        set result=#{result},
+        operation=#{operation},
+        part=#{part},
+        operator=#{operator},
+        repair_date=now(),
+        retest_area=#{retest_area},
+        element=#{element},
+        dc=#{dc},
+        others=#{others}
+        where ssd_sn=#{ssd_sn}
+        and pcba_sn=#{pcba_sn}
+        and error_area=#{error_area}
+    </update>
+
+    <select id="selectOC1" resultType="com.hrms.bean.Repair">
+        select errorCode errorcode,fw,testTime error_date
+        from tb_oc1
+        where (sn=#{ssd_sn}
+        OR sn=#{pcba_sn})
+        and testResult='fail'
+        order by id desc
+        limit 1
+    </select>
+
+    <select id="selectOC2" resultType="com.hrms.bean.Repair">
+        select errorCode errorcode,fw,testTime error_date
+        from tb_oc2
+        where (sn=#{ssd_sn}
+        OR sn=#{pcba_sn})
+        and testResult='fail'
+        order by id desc
+        limit 1
+    </select>
+    <select id="selectOC4" resultType="com.hrms.bean.Repair">
+        select errorCode errorcode,fw,testTime error_date
+        from tb_oc4
+        where (sn=#{ssd_sn}
+        OR sn=#{pcba_sn})
+        and testResult='fail'
+        order by id desc
+        limit 1
+    </select>
+    <select id="selectCDI" resultType="java.lang.String">
+        select errorCode,testTime error_date
+        from tb_cdi
+        where (sn=#{ssd_sn}
+        OR sn=#{pcba_sn})
+        and testResult='NG'
+        order by id desc
+        limit 1
+    </select>
+    <select id="selectcheck" resultType="com.hrms.bean.Repair">
+        select operation errorcode,FW fw,tb_check.time error_date
+        from tb_check
+        where productSN=#{ssd_sn}
+        and operation !='无'
+        order by check_id desc
+        limit 1
+    </select>
+    <insert id="inboundOC1">
+        insert into tb_repair
+        (ssd_sn, pcba_sn,fw, error_date, error_area, errorcode, result, operation, part, operator, repair_date)
+        values
+        (#{ssd_sn},#{pcba_sn},#{fw},#{error_date},#{error_area},#{errorcode},#{result},#{operation},#{part},#{operator},NOW())
+    </insert>
+
+    <update id="outbound" parameterType="com.hrms.bean.Repair">
+        update tb_repair
+        set outbound_time=now(),
+        outbound_receiver=#{outbound_receiver}
+        where ssd_sn=#{ssd_sn}
+        and pcba_sn=#{pcba_sn}
+    </update>
+</mapper>

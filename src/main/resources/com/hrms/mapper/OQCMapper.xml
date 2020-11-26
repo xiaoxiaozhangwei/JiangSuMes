@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.OQCMapper">
+
+    <insert id="insertcheck1" parameterType="com.hrms.bean.Check">
+        insert into tb_oqc
+        ( productSN, model, mo_id, operation, operator, time,FW,line)
+        values(#{productSN1},#{model},#{moId},'无',#{operator},now(),#{FW},'品保')
+    </insert>
+    <insert id="insertcheck2" parameterType="com.hrms.bean.Check">
+        insert into tb_oqc
+        (productSN, model, mo_id, operation, operator, time,FW,line)
+        values (#{productSN2},#{model},#{moId},#{operation},#{operator},now(),#{FW},'品保')
+    </insert>
+    <select id="selectProByName" parameterType="String" resultType="java.lang.Integer">
+        SELECT oqc_id
+        FROM tb_oqc
+        WHERE productSN = #{productSN}
+    </select>
+
+    <select id="production" resultType="java.lang.Integer" >
+        SELECT  COUNT(*)
+        FROM tb_oqc
+        WHERE product_SN=#{productSN1}
+        AND operation='正确'
+    </select>
+
+
+</mapper>

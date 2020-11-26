@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.RePackMapper">
+    <sql id="table_name">
+        tb_repack
+    </sql>
+
+    <insert id="insertpack" >
+        INSERT INTO
+        tb_repack
+        (productionSN, model, operation, time, mo_id,operator, Nbox_id)
+        VALUES (#{productionSN},#{model},#{operation},now(),#{moId},#{operator},#{nboxId})
+    </insert>
+
+    <select id="production" resultType="java.lang.Integer">
+        SELECT  check_id
+        FROM tb_check
+        WHERE productSN=#{productionSN}
+        AND operation='无'
+    </select>
+
+    <select id="count_Nbox" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT(Nbox_id))
+        FROM tb_repack
+        where time BETWEEN DATE_FORMAT(CURDATE(),'%Y-%m-%d %H:%i:%s')AND NOW()
+    </select>
+
+    <select id="selectProByName" parameterType="String" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(pack_id)
+        FROM
+        	tb_repack
+        WHERE
+        	productionSN = #{productionSN}
+        AND operation = '无'
+    </select>
+
+
+    <select id="packSN" resultType="com.hrms.bean.RePack">
+        SELECT
+            productionSN
+        FROM
+        	tb_repack
+        WHERE
+        	Nbox_id = #{nboxId}
+        AND operation = '无'
+    </select>
+
+    <select id="count_Wbox" resultType="java.lang.Integer">
+        SELECT COUNT(DISTINCT(Wbox_id))
+        FROM tb_repack
+        where time BETWEEN DATE_FORMAT(CURDATE(),'%Y-%m-%d %H:%i:%s')AND NOW()
+        AND Wbox_id !=''
+    </select>
+
+    <select id="NboxExists" parameterType="java.lang.String" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_repack
+        WHERE
+        	(
+        		Nbox_id = #{nboxId}
+        		AND operation = '无'
+        		AND Wbox_id = ''
+        	)
+        OR (
+        	Nbox_id = #{nboxId}
+        	AND operation = '无'
+        	AND Wbox_id IS NULL
+        )
+    </select>
+
+    <update id="updateWbox" parameterType="java.lang.String">
+        update tb_repack
+        SET Wbox_id=#{wboxId}
+        WHERE Nbox_id=#{nboxId}
+    </update>
+
+    <select id="selectNboxByPro" parameterType="java.lang.String" resultType="java.lang.String">
+        select Nbox_id nboxId
+        from tb_repack
+        where productionSN=#{productionSN}
+        and operation='无'
+    </select>
+
+    <select id="selectCountPro" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_repack
+        WHERE
+        	operation = '无'
+        AND time BETWEEN DATE_FORMAT(
+        	CURDATE(),
+        	'%Y-%m-%d %H:%i:%s'
+        )
+        AND NOW()
+    </select>
+    <select id="selectCountByNbox" resultType="java.lang.Integer">
+        SELECT
+            COUNT(*)
+        FROM
+        	tb_repack
+        WHERE
+        	Nbox_id = #{nboxId}
+        AND operation = '无'
+    </select>
+
+
+    <!-- 根据外箱号查询所有数据-->
+    <select id="selectWbox"  parameterType="java.lang.String"  resultType="com.hrms.bean.RePack" >
+        SELECT *
+        FROM tb_repack
+        where Wbox_id=#{wboxId}
+        AND  operation ='无'
+    </select>
+
+
+    <!-- 根据sn查询外箱号-->
+    <select id="selectWboxnumber" parameterType="java.lang.String" resultType="java.lang.String">
+        select Wbox_id
+        from tb_repack
+        where productionSN=#{productionSN}
+        and operation='无'
+    </select>
+
+
+    <insert id="insertpack2" >
+        INSERT INTO
+        tb_repack
+        (productionSN, model, operation, time, mo_id, operator, Nbox_id,Wbox_id)
+        VALUES (#{productionSN},#{model},'无',now(),#{moId},#{operator},#{nboxId},#{wboxId})
+    </insert>
+    <update id="update_moremain02"  >
+        UPDATE
+        tb_mo
+        SET
+        mo_remain0=mo_remain0-200
+        WHERE
+        mo_id = #{moId}
+    </update>
+
+    <!--内包装操作信息修改-->
+    <update id="updateModal">
+        update tb_repack
+        SET operation='错误'
+        where productionSN=#{productionSN}
+    </update>
+</mapper>

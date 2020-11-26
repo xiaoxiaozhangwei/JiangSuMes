@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.EnvironmentMapper">
+    <insert id="insert" >
+        INSERT INTO db_mes.tb_environ (
+        	date, RDT, OC3, BIT, link, store, IQC, extract, changeshoe, walk, office, RMA, rest, tea, cause
+        )
+        VALUES(
+        	NOW(),#{RDT}, #{OC3}, #{BIT}, #{link}, #{store}, #{IQC}, #{extract},#{changeshoe}, #{walk}, #{office}, #{RMA}, #{rest}, #{tea}, #{cause}
+        )
+    </insert>
+
+    <select id="selectthisweek" resultType="com.hrms.bean.Environment">
+        SELECT
+        	*
+        FROM
+        	tb_environ
+        WHERE
+        	YEARWEEK(
+        		DATE_FORMAT(date, '%Y-%m-%d')
+        	) = YEARWEEK(NOW());
+    </select>
+
+    <select id="SelectTodayExists" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_environ
+        WHERE
+        	date = CURDATE()
+    </select>
+
+    <update id="UpdateTodayExists">
+        update
+            tb_environ
+        SET
+            RDT=#{RDT}, OC3=#{OC3}, BIT=#{BIT}, link=#{link}, store=#{store}, IQC=#{IQC}, extract=#{extract}, changeshoe=#{changeshoe}, walk=#{walk}, office=#{office}, RMA=#{RMA}, rest=#{rest}, tea=#{tea}, cause=#{cause}
+        WHERE
+            date = CURDATE()
+    </update>
+
+    <insert id="insertpicture">
+        insert into tb_picture
+        ( date, area, picture, question)
+        values (NOW(),#{area},#{picture},#{question})
+    </insert>
+
+    <select id="selectallpict" resultType="com.hrms.bean.Environment">
+        select picture_id, tb_picture.date date2, area, picture, question
+        from tb_picture
+    </select>
+
+    <select id="AvgByWeek" resultType="com.hrms.bean.Environment">
+        SELECT
+	        AVG(RDT) RDT,
+	        AVG(OC3) OC3,
+	        AVG(tb_environ.BIT) BIT,
+	        AVG(LINK) LINK,
+	        AVG(STORE) STORE,
+	        AVG(IQC) IQC,
+	        AVG(EXTRACT) EXTRACT,
+	        AVG(CHANGESHOE) CHANGESHOE,
+	        AVG(WALK) WALK,
+	        AVG(OFFICE) OFFICE,
+	        AVG(RMA) RMA,
+	        AVG(REST) REST,
+	        AVG(TEA) TEA
+        FROM
+        	tb_environ
+        WHERE
+        	DATE_FORMAT(date, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+        GROUP BY
+        	WEEKOFYEAR(date)
+    </select>
+
+    <select id="AvgthisMonth" resultType="com.hrms.bean.Environment">
+        SELECT
+	        AVG(RDT) RDT,
+	        AVG(OC3) OC3,
+	        AVG(tb_environ.BIT) BIT,
+	        AVG(LINK) LINK,
+	        AVG(STORE) STORE,
+	        AVG(IQC) IQC,
+	        AVG(EXTRACT) EXTRACT,
+	        AVG(CHANGESHOE) CHANGESHOE,
+	        AVG(WALK) WALK,
+	        AVG(OFFICE) OFFICE,
+	        AVG(RMA) RMA,
+	        AVG(REST) REST,
+	        AVG(TEA) TEA
+        FROM
+        	tb_environ
+        WHERE
+        	DATE_FORMAT(date, '%Y%m') = DATE_FORMAT(CURDATE(), '%Y%m')
+    </select>
+
+</mapper>

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hrms.mapper.UserMapper">
+
+
+    <select id="logincheck"  resultType="com.hrms.bean.User"  parameterType="String">
+        select user_id,name,pwd,name_alias from tb_user where name=#{name}
+
+    </select>
+
+    <select id="checkUser" resultType="com.hrms.bean.User" parameterType="String">
+        select job_number,name,pwd,name_alias from tb_user where name=#{name}
+    </select>
+
+
+    <select id="selectAllUser"  resultType="com.hrms.bean.User">
+     select job_number, name,pwd,name_alias
+     FROM tb_user
+    </select>
+
+    <delete id="deleteUser" parameterType="String" >
+       delete  FROM tb_user where name =#{name}
+   </delete>
+
+    <insert id="insertUser" parameterType="com.hrms.bean.User" >
+        insert into tb_user(job_number,name,pwd,name_alias) values (#{job_number},#{name},#{pwd},#{name_alias})
+
+    </insert>
+
+
+    <update id="updateUser" parameterType="com.hrms.bean.User">
+        update tb_user
+        set name=#{user.name},pwd=#{user.pwd},name_alias=#{user.name_alias}
+        where job_number=#{job_number}
+    </update>
+
+    <select id="selectUser"  resultType="com.hrms.bean.User" parameterType="String">
+        select job_number,name,pwd,name_alias from tb_user where job_number=#{job_number}
+    </select>
+
+    <select id="selectName" parameterType="String"  resultType="String">
+        select name from  tb_user where   job_number=#{job_number}
+    </select>
+
+    <select id="queryUserByUserName"  resultType="com.hrms.bean.User">
+        select * from  tb_user where name_alias=#{alias}
+    </select>
+
+    <update id="lockUser"  parameterType="String">
+        update tb_user set tb_user.lock = 1 where  name=#{alias}
+    </update>
+</mapper>

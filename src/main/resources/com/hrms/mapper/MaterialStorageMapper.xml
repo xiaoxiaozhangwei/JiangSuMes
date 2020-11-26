@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.MaterialStorageMapper">
+    <sql id="table_name">
+        tb_materialStorage
+    </sql>
+
+    <resultMap id="materialStorageResult" type="com.hrms.bean.MaterialStorage">
+        <id column="id"          property="id"></id>
+        <result column="erp" property="erp"></result>
+        <result column="mo" property="mo"></result>
+        <result column="purchaseNumber" property="purchaseNumber"></result>
+        <result column="num" property="num"></result>
+        <result column="productName" property="productName"></result>
+        <result column="time" property="time"></result>
+        <result column="storageArea" property="storageArea"></result>
+        <result column="stock" property="stock"></result>
+    </resultMap>
+
+    <!--来料入库数据添加到来料表 -->
+    <insert id="save" parameterType="com.hrms.bean.MaterialStorage">
+        insert into tb_materialstorage (erp,wbox,num,productName,storageArea,stock,operator,time,mo,purchaseNumber) values
+        (#{erp},#{wbox},#{num},#{productName},#{storageArea},#{stock},#{operator},NOW(),#{mo},#{purchaseNumber})
+    </insert>
+
+    <!--来料入库数据添加到记录表 -->
+    <insert id="insertRecord">
+        INSERT INTO tb_materialrecord ( erp,record,amount,time,operator )
+        VALUES
+	(
+		#{erp},#{record},
+		(( #{record} + 0 ) + (
+			0+ ( SELECT * FROM ( SELECT ifnull(( SELECT amount FROM tb_materialrecord where erp = #{erp} ORDER BY time desc LIMIT 1 ), 0 ) AS t ) a )
+		)),NOW(),#{operator}
+	)
+    </insert>
+
+
+    <!-- 查找前台传入的erp料号的数据，按时间排序，先进先出-->
+    <select id="selectMaterialStorageByTime" resultType="com.hrms.bean.MaterialStorage" parameterType="java.lang.String">
+        SELECT * FROM tb_materialstorage WHERE erp=#{erp} and  num !=0 ORDER BY time
+    </select>
+
+    <!-- 当出库表记录erp对应采购单的数量时，入库表也需要删除相应的数量-->
+    <update id="updateStorage">
+        update tb_materialstorage set num = num - #{num}  where erp = #{erp} and purchaseNumber = #{purchaseNumber} and num > 0 ORDER BY time limit 1
+    </update>
+
+    <!--根据erp查询erp记录表 -->
+    <select id="selectERPHistory" parameterType="java.lang.String" resultType="com.hrms.bean.MaterialRecord">
+        select * from tb_materialrecord where erp = #{erp} order by time
+    </select>
+
+    <!-- 来料出库页面，判断出库数量是否大于库存数量-->
+    <select id="selectNumber" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select num from tb_materialstorage where wbox = #{wbox}
+    </select>
+
+    <!--检查展板不允许放置不同的erp料号-->
+    <select id="check" parameterType="java.lang.String" resultType="java.lang.String">
+        select distinct(erp) from tb_materialstorage where stock = #{stock}
+    </select>
+
+    <!--扫描枪扫描储位，判断该储位上的erp是否是该erp中最早入库的。先进先出。不是的话要提示哪一个储位上的是最早入库的 -->
+    <select id="saostock" parameterType="java.lang.String" resultType="java.lang.String">
+        select stock from tb_materialstorage where erp = #{erp} and num &gt; 0  order by time limit 1
+    </select>
+
+    <!--扫描枪扫描外箱，判断该外箱是否属于该储位 -->
+    <select id="saowbox" parameterType="java.lang.String" resultType="java.lang.String">
+        select wbox from tb_materialstorage where stock = #{stock}
+    </select>
+
+    <!--在扫描枪扫描外箱之后，如果该外箱不属于该储位，那么就需要提示该外箱属于哪个储位 -->
+    <select id="selectstock" parameterType="java.lang.String" resultType="java.lang.String">
+        select stock from tb_materialstorage where wbox = #{saowbox}
+    </select>
+
+    <!--该外箱属于该储位，在下方表格中自动填充数量-->
+    <select id="selectnum" parameterType="java.lang.String" resultType="java.lang.Integer">
+        select num from tb_materialstorage where wbox = #{wbox}
+    </select>
+
+    <!--出库页面根据外箱号查询出来要往出库表中添加的记录 -->
+    <select id="selectMessage" parameterType="java.lang.String" resultType="com.hrms.bean.MaterialStorage">
+        select storageArea,mo,purchaseNumber from tb_materialstorage where wbox = #{wbox}
+    </select>
+
+    <!--选择最早入库储位上最早入库的外箱 -->
+    <select id="firstwbox" parameterType="java.lang.String" resultType="java.lang.String">
+        select wbox from tb_materialstorage where stock = #{stock} and num &gt; 0 order by time limit 1
+    </select>
+</mapper>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.RoleMapper">
+
+
+
+
+<select id="queryRolesByUserName" resultType="com.hrms.bean.Role">
+    select  t1.* from role t1 inner join  user_role t2 on(t1.roleid=t2.roleid)
+    where  t2.username=#{username}
+</select>
+
+
+
+</mapper>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.hrms.mapper.ScanSNPrintMapper">
+    <select id="getmoremain" resultType="java.lang.Integer">
+        select count(distinct product_sn)
+        from tb_scansn
+        where operation='正确'
+        and mo_id=#{mo_id}
+    </select>
+    
+    <insert id="add_chandesn" parameterType="com.hrms.bean.Baozhuang">
+        insert into tb_scansn
+        (product_sn, mo_id, model, mo_num, operation, operator, operate_time)
+        values (#{productionSN},#{moId},#{model},#{monum},#{operation},#{operator},now())
+    </insert>
+</mapper>

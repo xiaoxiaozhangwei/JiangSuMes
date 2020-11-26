@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.ShipmentMapper">
+    <!--插入出货数据库-->
+    <insert id="insertShipment" >
+        INSERT INTO tb_shipment (wbox,num,productSpecifications,applicant,customer,shipmentNature,receivingInformation,erpItemNo,erpOddNumbers,oa,logisticsNumber,comments,operator,time)
+        VALUES
+	   (#{wbox},#{num},#{productSpecifications},#{applicant},#{customer},#{shipmentNature},#{receivingInformation},#{erpItemNo},#{erpOddNumbers},#{oa},#{logisticsNumber},#{comments},#{operator},now())
+    </insert>
+
+    <!-- 出货SN信息比对  根据所有出货SN 查询是否重复-->
+    <select id="selectByAllSN" resultType="java.lang.String">
+    SELECT t1.* FROM
+    (SELECT productionSN FROM tb_cangku WHERE Wbox_id=#{wbox}) AS t1
+    INNER JOIN
+    ( SELECT productionSN FROM tb_cangku WHERE Wbox_id in (SELECT DISTINCT wbox FROM tb_shipment)) AS t2
+    WHERE t1.productionSN = t2.productionSN
+</select>
+
+    <!--导出要出货的SN号-->
+    <select id="selectShipmentSN" resultType="java.lang.String">
+        SELECT productionSN FROM tb_cangku
+        <if test="list != null and list.size>0">
+            WHERE Wbox_id IN
+            <foreach collection="list" open="(" close=")" item="wbox" separator=",">
+                #{wbox}
+            </foreach>
+        </if>
+    </select>
+
+
+    <!--查找入库时间最早的，先进先出-->
+    <select id="selectFirstByStorageTime" resultType="com.hrms.bean.Storage">
+          SELECT *  FROM tb_storage WHERE model = #{model} ORDER BY time ASC LIMIT 1
+    </select>
+
+</mapper>

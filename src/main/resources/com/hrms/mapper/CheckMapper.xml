@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.CheckMapper">
+    <sql id="table_name">
+        tb_check
+    </sql>
+    <resultMap id="checkResult" type="com.hrms.bean.Check">
+        <id column="check_id" property="checkId"></id>
+        <result column="productSN" property="productSN"></result>
+        <result column="model" property="model"></result>
+        <result column="mo_id" property="moId"></result>
+        <result column="operation" property="operation"></result>
+        <result column="operator" property="operator"></result>
+        <result column="time" property="time"></result>
+    </resultMap>
+
+    <insert id="insertcheck1" parameterType="com.hrms.bean.Check">
+        insert into tb_check
+        ( productSN, model, mo_id, operation, operator, time,FW,line)
+        values(#{productSN1},#{model},#{moId},'无',#{operator},now(),#{FW},#{xianbie})
+    </insert>
+    <insert id="insertcheck2" parameterType="com.hrms.bean.Check">
+        insert into tb_check
+        (productSN, model, mo_id, operation, operator, time,FW,line)
+        values (#{productSN2},#{model},#{moId},#{operation},#{operator},now(),#{FW},#{xianbie})
+    </insert>
+    <select id="selectProByName"  resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM tb_check
+        WHERE productSN = #{productSN}
+        and mo_id=#{moid}
+    </select>
+    <update id="updatemo" >
+        UPDATE
+        tb_mo
+        SET
+        mo_remain1=mo_remain1-1
+        WHERE
+        mo_id = #{moId}
+    </update>
+    <select id="production" resultType="java.lang.Integer" >
+        SELECT  COUNT(*)
+        FROM tb_link
+        WHERE product_SN=#{productSN1}
+        AND operation='正确'
+    </select>
+
+    <select id="selectrightcount1" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_check
+        WHERE
+        	operation = '无'
+        AND time
+        BETWEEN
+        	DATE_FORMAT(
+
+        		CURDATE(),
+        		'%Y-%m-%d %H:%i:%s'
+        	)
+        	AND NOW()
+        AND line = '线别1'
+        AND productSN!=''
+    </select>
+    <select id="selectrightcount2" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_check
+        WHERE
+        	operation = '无'
+        AND time
+        BETWEEN
+        	DATE_FORMAT(
+
+        		CURDATE(),
+        		'%Y-%m-%d %H:%i:%s'
+        	)
+        	AND NOW()
+
+        AND line = '线别2'
+        AND productSN!=''
+    </select>
+    <select id="selectwrongcount1" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_check
+        WHERE
+        	operation != '无'
+        AND time
+        BETWEEN
+        	DATE_FORMAT(
+
+        		CURDATE(),
+        		'%Y-%m-%d %H:%i:%s'
+        	)
+        	AND NOW()
+
+        AND line = '线别1'
+        AND productSN!=''
+    </select>
+    <select id="selectwrongcount2" resultType="java.lang.Integer">
+        SELECT
+        	COUNT(*)
+        FROM
+        	tb_check
+        WHERE
+        	operation != '无'
+        AND time
+        BETWEEN
+        	DATE_FORMAT(
+
+        		CURDATE(),
+        		'%Y-%m-%d %H:%i:%s'
+        	)
+        	AND NOW()
+
+        AND line = '线别2'
+        AND productSN!=''
+    </select>
+    <select id="selecthismonthmodel" resultType="java.lang.String">
+        SELECT DISTINCT
+        	model
+        FROM
+        	tb_check
+        WHERE
+            mo_id not like 'T600%'
+        and	DATE_FORMAT(time, '%Y%m') = DATE_FORMAT(#{daytime}, '%Y%m')
+    </select>
+    <select id="selectrightcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM
+        	tb_check
+        WHERE
+        operation='无'
+        and
+        	tb_check.time between #{daytime}' 00:00:00' AND #{daytime}' 23:59:59'
+        and  tb_check.model=#{model}
+    </select>
+    <select id="selectwrongcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(*)
+        FROM
+        	tb_check
+        WHERE
+        operation != '无'
+        and
+        	tb_check.time between #{daytime}' 00:00:00' AND #{daytime}' 23:59:59'
+        and  tb_check.model=#{model}
+    </select>
+
+    <!-- 根据线别选择目检电子看板数据 -->
+    <select id="selectCheckRelate"  resultType="java.lang.Integer" >
+          SELECT count(*)
+        FROM
+        	tb_check
+        	<where>
+                <choose>
+                    <when test='operation=="无"'>
+                        operation='无'
+                    </when>
+                    <when test='operation!="无"'>
+                        and operation !='无'
+                    </when>
+                </choose>
+
+                <if test="line != null and line != ''">
+                 and  line=#{line}
+                </if>
+
+                and date(time) = curdate()
+                AND productSN!=''
+            </where>
+
+    </select>
+    
+
+</mapper>

@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.CDIMapper">
+<!--
+    <select id="selectmo" resultMap="MoResult" parameterType="String">
+        select mo_id,mo_num,mo_remain from tb_mo where mo_id=#{moId}
+    </select>
+
+
+
+
+
+
+
+    <insert id="addMo"  parameterType="com.hrms.bean.Gongdan">
+        insert  into tb_mo(mo_id,model ,mo_num,mo_remain,mo_remain0,mo_remain1) values(#{moId},#{model},#{moNum},#{moNum},#{moNum},#{moNum})
+    </insert>
+
+    <select id="checkMo" parameterType="java.lang.String" resultType="java.lang.String">
+        select mo_id FROM tb_mo where mo_id=#{moId}
+    </select>
+
+    <select id="selectMoAll" resultType="com.hrms.bean.Gongdan" parameterType="java.lang.String" resultMap="MoResult">
+        select mo_id,mo_num,mo_remain
+        FROM  tb_mo
+
+    </select>
+
+    <delete id="deleteMo" parameterType="java.lang.String" >
+
+        delete from tb_mo where mo_id=#{moId}
+    </delete>
+
+    <update id="updateMo" parameterType="com.hrms.bean.Gongdan" >
+        update tb_mo
+        SET mo_num=#{gongdan.moNum}, mo_remain=#{gongdan.moRemain}
+        WHERE mo_id=#{moId}
+    </update>
+
+    <select id="selectmoid" resultType="java.lang.String" resultMap="MoResult">
+        SELECT mo_id
+        FROM tb_mo
+    </select>
+-->
+
+    <insert id="insertCDI" parameterType="com.hrms.bean.CDI">
+        insert into tb_cdi(mo,deviceNumber,operator,sn,model,testName,testTime,testResult,errorCode)
+         values (#{mo},#{deviceNumber},#{operator},#{sn},#{model},#{testName},#{testTime},#{testResult},#{errorCode})
+    </insert>
+
+    <select id="selectCDIpassByline1"  resultType="java.lang.Integer">
+        select  count(*) from  tb_cdi where testResult="PASS" and date(testTime) = curdate() and  deviceNumber='1'
+    </select>
+
+    <select id="selectCDINGByline1"  resultType="java.lang.Integer">
+        select  count(*) from  tb_cdi where testResult="NG" and date(testTime) = curdate()  and  deviceNumber='1'
+    </select>
+
+    <select id="selectCDIpassByline2"  resultType="java.lang.Integer">
+        select  count(*) from  tb_cdi where testResult="PASS" and date(testTime) = curdate() and  deviceNumber='2'
+    </select>
+
+    <select id="selectCDINGByline2"  resultType="java.lang.Integer">
+        select  count(*) from  tb_cdi where testResult="NG" and date(testTime) = curdate()  and  deviceNumber='2'
+    </select>
+
+    <select id="selectCDIpassByline3"  resultType="java.lang.Integer">
+        select  count(*) from  tb_cdi where testResult="PASS" and date(testTime) = curdate() and  deviceNumber='3'
+    </select>
+
+    <select id="selectCDINGByline3"  resultType="java.lang.Integer">
+        select  count(*) from  tb_cdi where testResult="NG" and date(testTime) = curdate()  and  deviceNumber='3'
+    </select>
+
+    <select id="selecthismonthmodel" resultType="java.lang.String">
+        SELECT DISTINCT
+        	model
+        FROM
+        	tb_cdi
+        WHERE
+            testResult='PASS'
+        and mo not like 'T600%'
+        and
+        	DATE_FORMAT(testTime, '%Y%m') = DATE_FORMAT(#{daytime}, '%Y%m')
+    </select>
+    <select id="selectrightcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(distinct sn)
+        FROM
+        	tb_cdi
+        WHERE
+        testResult='PASS'
+        and
+        	testTime like #{daytime}
+        and model=#{model}
+        and length (sn) in (15,17)
+    </select>
+    <select id="selectwrongcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(distinct sn)
+        FROM
+        	tb_cdi
+        WHERE
+        testResult='NG'
+        and sn not in (SELECT distinct sn
+        FROM
+        	tb_cdi
+        WHERE
+        testResult='PASS'
+        and
+        	testTime like #{daytime}
+        and model=#{model})
+        and
+        	testTime like #{daytime}
+        and  model=#{model}
+    </select>
+
+    <!-- 检查目检经过cdi-->
+    <select id="selectPassCDI" resultType="com.hrms.bean.CDI">
+        select * from tb_cdi where sn = #{productionSN} and mo = #{mo} and testResult = 'PASS'
+    </select>
+
+    <!-- 根据线别选择cdi电子看板数据 -->
+    <select id="selectCDIByDisplayBoard" resultType="java.lang.Integer">
+        select  count(*) from  tb_cdi where testResult=#{testResult} and date(testTime) = curdate() and  deviceNumber=#{deviceNumber}
+    </select>
+</mapper>

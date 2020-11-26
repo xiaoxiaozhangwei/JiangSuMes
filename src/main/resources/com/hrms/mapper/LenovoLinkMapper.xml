@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.LenovoLinkMapper">
+    <!--插入数据-->
+    <insert id="insertlenovolink" parameterType="com.hrms.bean.Zuzhuang">
+        insert into tb_link_lenovo
+        (product_SN, lenovo_SN, mo_id, model, pn, erp, operator, tb_link_lenovo.date, operation, comments)
+        values (#{productionSN},#{lenovoSN},#{moId},#{devicename},#{pn},#{erp},#{operator},now(),#{operation},#{comments})
+    </insert>
+
+    <!--product_SN查重-->
+    <select id="selectProductsnExist" resultType="com.hrms.bean.Zuzhuang">
+        select *
+        from tb_link_lenovo
+        where product_SN=#{productionSN}
+        and operation='正确'
+    </select>
+
+    <!--Lenovo_SN查重-->
+    <select id="selectLenovosnExist" resultType="com.hrms.bean.Zuzhuang">
+        select *
+        from tb_link_lenovo
+        where lenovo_SN=#{lenovoSN}
+        and operation='正确'
+    </select>
+</mapper>

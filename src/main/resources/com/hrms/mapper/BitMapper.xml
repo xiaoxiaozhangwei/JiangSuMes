@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.BitMapper">
+
+
+    <insert id="insertBit" parameterType="com.hrms.bean.Bit">
+         insert into tb_bit(sn,model,BitNumber,ComputerNumber,DiskName,fw,ip,testName,StartTime,FinishTime,name,round,times,testResult,ErrorCode)
+         values (#{sn},#{model},#{BitNumber},#{ComputerNumber},#{DiskName},#{fw},#{ip},#{testName},#{StartTime},#{FinishTime},#{name},#{round},#{times},#{testResult},#{ErrorCode})
+    </insert>
+
+    <select id="selectBitpass"  resultType="java.lang.Integer">
+        select count(distinct sn) from  tb_bit where testResult="PASS" and date(StartTime) = curdate()
+    </select>
+
+
+
+    <select id="selectBitNG"  resultType="java.lang.Integer">
+        select count(distinct sn) from  tb_bit where testResult="NG" and date(StartTime) = curdate()
+    </select>
+
+    <select id="selecthismonthmodel" resultType="java.lang.String">
+        SELECT DISTINCT
+        	model
+        FROM
+        	tb_bit
+        WHERE
+            testResult='PASS'
+        and model!=''
+        and
+        	DATE_FORMAT(FinishTime, '%Y%m') = DATE_FORMAT(#{daytime}, '%Y%m')
+    </select>
+    <select id="selectrightcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(distinct sn)
+        FROM
+        	tb_bit
+        WHERE
+        testResult='PASS'
+        and
+        	FinishTime between #{daytime}'07:00:00' AND DATE_ADD(#{daytime}' 07:00:00',INTERVAL 1 DAY)
+        and model=#{model}
+    </select>
+
+    <select id="selectwrongcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(distinct sn)
+        FROM
+        	tb_bit
+        WHERE
+        testResult='NG'
+        and sn not in (SELECT distinct sn
+        FROM
+        	tb_bit
+        WHERE
+        testResult='PASS'
+        )
+        and BitNumber !='D3'
+        and
+        	FinishTime between DATE_ADD(#{daytime}' 07:00:00',INTERVAL -1 DAY) AND #{daytime}'07:00:00'
+        and  model=#{model}
+
+    </select>
+
+    
+    
+    
+    <select id="selectAllNGBymonth" resultType="java.lang.Integer" >
+
+        SELECT count(*)  FROM tb_bit WHERE DATE_FORMAT(FinishTime, '%Y%m') = DATE_FORMAT(CURDATE( ) , '%Y%m')
+        <if test="TestResult !=null and TestResult !=''">
+            AND TestResult= #{TestResult}
+        </if>
+        <if test="BitNumber !=null and BitNumber !=''">
+            AND  BitNumber= #{BitNumber}
+        </if>
+        <if test="ErrorCode !=null and ErrorCode !=''">
+            AND  ErrorCode= #{ErrorCode}
+        </if>
+
+    </select>
+
+    <select id="selectNGByBitNumberday"  resultType="java.lang.Integer"  >
+
+
+        SELECT count(*)  FROM tb_bit
+        where
+        (FinishTime >= DATE_FORMAT(
+        date_sub(
+        CURRENT_DATE (),
+        INTERVAL 1 DAY
+        ),
+        '%Y-%m-%d 07:00:00'
+        )
+        AND FinishTime  &lt;= DATE_FORMAT(now(), '%Y-%m-%d 07:00:00'))
+            <if test="BitNumber !=null and BitNumber !=''">
+                AND  BitNumber= #{BitNumber}
+            </if>
+            <if test="model !=null and model !=''">
+                AND model= #{model}
+            </if>
+            <if test="ErrorCode !=null and ErrorCode !=''">
+                AND  ErrorCode= #{ErrorCode}
+            </if>
+
+
+    </select>
+
+    <select id="selectModelByday" resultType="java.lang.String" >
+
+        SELECT DISTINCT model FROM tb_bit  WHERE   DATE_FORMAT(FinishTime, '%Y%m') = DATE_FORMAT(CURDATE( ) , '%Y%m') AND model !=''
+
+
+    </select>
+
+
+    <select id="selectpasscountbymodelandbitnumber" resultType="java.lang.Integer">
+        SELECT count(distinct sn)
+        FROM
+        	tb_bit
+        WHERE
+        testResult='PASS'
+        and
+         (FinishTime >= DATE_FORMAT(
+        date_sub(
+        CURRENT_DATE (),
+        INTERVAL 1 DAY
+        ),
+        '%Y-%m-%d 07:00:00'
+        )
+        AND FinishTime  &lt;= DATE_FORMAT(now(), '%Y-%m-%d 07:00:00'))
+        and model=#{model}
+        AND  BitNumber= #{BitNumber}
+
+
+    </select>
+
+</mapper>

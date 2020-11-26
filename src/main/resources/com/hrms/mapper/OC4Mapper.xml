@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.OC4Mapper">
+
+
+    <insert id="insertOC4" parameterType="com.hrms.bean.PCBAData">
+        insert into tb_oc4(mo,deviceNumber,operator,sn,model,testName,testTime,testResult,errorCode,fw)
+         values (#{mo},#{deviceNumber},#{operator},#{sn},#{model},#{testName},#{testTime},#{testResult},#{errorCode},#{fw})
+    </insert>
+
+    <select id="selectOC4passByline1"  resultType="java.lang.Integer">
+        select count(distinct sn) from  tb_oc4 where testResult="success" and date(testTime) = curdate() and  deviceNumber='1'
+    </select>
+
+    <select id="selectOC4NGByline1"  resultType="java.lang.Integer">
+        select count(distinct sn) from  tb_oc4 where testResult="fail" and date(testTime) = curdate()  and  deviceNumber='1'
+    </select>
+
+
+    <select id="selectOC4passByline2"  resultType="java.lang.Integer">
+        select count(*) from tb_oc4 where testResult="success" and date(testTime) = curdate() and  deviceNumber='2'
+    </select>
+
+    <select id="selectOC4NGByline2"  resultType="java.lang.Integer">
+        select count(*) from  tb_oc4 where testResult="fail" and date(testTime) = curdate()  and  deviceNumber='2'
+    </select>
+    <select id="selectOC4passByline3"  resultType="java.lang.Integer">
+        select count(*) from tb_oc4 where testResult="success" and date(testTime) = curdate() and  deviceNumber='3'
+    </select>
+
+    <select id="selectOC4NGByline3"  resultType="java.lang.Integer">
+        select count(*) from  tb_oc4 where testResult="fail" and date(testTime) = curdate()  and  deviceNumber='3'
+    </select>
+
+    <select id="selecthismonthmodel" resultType="java.lang.String">
+        SELECT DISTINCT
+        	model
+        FROM
+        	tb_oc4
+        WHERE
+            testResult='success'
+        and mo not like 'T600%'
+        and
+        	DATE_FORMAT(testTime, '%Y%m') = DATE_FORMAT(#{daytime}, '%Y%m')
+    </select>
+    <select id="selectrightcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(distinct sn)
+        FROM
+        	tb_oc4
+        WHERE
+        testResult='success'
+        and
+        	testTime between #{daytime}' 00:00:00' AND #{daytime}' 23:59:59'
+        and model=#{model}
+    </select>
+
+
+    <select id="selectwrongcountbymodeldaily" resultType="java.lang.Integer">
+        SELECT count(distinct sn)
+        FROM
+        	tb_oc4
+        WHERE
+        testResult='fail'
+        and sn not in (SELECT distinct sn
+        FROM
+        	tb_oc4
+        WHERE
+        testResult='success'
+        and
+        	testTime between #{daytime}' 00:00:00' AND #{daytime}' 23:59:59'
+        and model=#{model})
+        and
+        	testTime between #{daytime}' 00:00:00' AND #{daytime}' 23:59:59'
+        and  model=#{model}
+    </select>
+
+    <!-- 根据线别选择OC4电子看板数据 -->
+    <select id="selectOC4ByDisplayBoard"  resultType="java.lang.Integer">
+        select count(distinct sn) from  tb_oc4 where testResult=#{testResult} and date(testTime) = curdate() and  deviceNumber=#{deviceNumber}
+    </select>
+</mapper>

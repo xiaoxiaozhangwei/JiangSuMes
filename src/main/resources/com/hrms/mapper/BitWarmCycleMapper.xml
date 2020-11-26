@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.BitWarmCycleMapper">
+
+
+    <insert id="insertBitWarmCycle" parameterType="com.hrms.bean.Bit">
+         insert into tb_warmcycle(sn,model,BitNumber,ComputerNumber,DiskName,fw,ip,testName,StartTime,FinishTime,name,round,times,testResult,ErrorCode)
+         values (#{sn},#{model},#{BitNumber},#{ComputerNumber},#{DiskName},#{fw},#{ip},#{testName},#{StartTime},#{FinishTime},#{name},#{round},#{times},#{testResult},#{ErrorCode})
+    </insert>
+
+
+
+
+
+
+</mapper>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.GongdanMapper">
+
+    <resultMap id="MoResult" type="com.hrms.bean.Gongdan">
+        <id column="mo_id" property="moId"></id>
+        <result column="model" property="model"></result>
+        <result column="mo_num" property="moNum"></result>
+        <result column="mo_remain" property="moRemain"></result>
+        <result column="mo_remain0" property="moRemain0"></result>
+        <result column="mo_remain1" property="moRemain1"></result>
+        <result column="product_name" property="product_name"></result>
+        <result column="pn" property="pn"></result>
+        <result column="spec" property="spec"></result>
+        <result column="gkMo" property="gkMo"></result>
+
+    </resultMap>
+    <select id="selectmo"  resultMap="MoResult"   parameterType="String">
+        select * from tb_mo where mo_id=#{moId}
+    </select>
+
+    <select id="getMoById" parameterType="java.lang.String" resultType="com.hrms.bean.Gongdan" resultMap="MoResult">
+        SELECT
+        mo_num moNum,model model,mo_remain moRemain,mo_remain0 moRemain0,mo_remain1 moRemain1,mo_remain_label moRemainlabel,product_name,pn,spec,gkMo
+        FROM
+        tb_mo
+        WHERE
+        mo_id = #{moId}
+    </select>
+
+    <select id="getMoById0" parameterType="java.lang.String" resultType="com.hrms.bean.Gongdan">
+        SELECT
+        mo_num moNum,mo_remain0 moRemain0
+        FROM
+        tb_mo
+        WHERE
+        mo_id = #{moId}
+    </select>
+
+    <update id="update_moremain0"  >
+        UPDATE
+        tb_mo
+        SET
+        mo_remain0=mo_remain0-1
+        WHERE
+        mo_id = #{moId}
+    </update>
+
+
+    <insert id="addMo"  parameterType="com.hrms.bean.Gongdan">
+        insert  into
+        tb_mo(mo_id, model, product_name, pn, spec, mo_num, mo_remain, mo_remain0, mo_remain1, mo_remain_label,gkMo,operator,fw)
+        values(#{moId},#{model},#{product_name},#{pn},#{spec},#{moNum},#{moNum},#{moNum},#{moNum},#{moNum},#{gkMo},#{operator},#{fw})
+    </insert>
+
+    <select id="checkMo" parameterType="java.lang.String" resultType="java.lang.String">
+        select mo_id FROM tb_mo where mo_id=#{moId}
+    </select>
+
+    <select id="selectMoAll" resultType="com.hrms.bean.Gongdan" parameterType="java.lang.String" resultMap="MoResult">
+        select mo_id,mo_num,mo_remain
+        FROM  tb_mo
+
+    </select>
+
+    <delete id="deleteMo" parameterType="java.lang.String" >
+
+        delete from tb_mo where mo_id=#{moId}
+    </delete>
+
+    <update id="updateMo" parameterType="com.hrms.bean.Gongdan">
+        update tb_mo
+        SET mo_num =#{gongdan.moNum}, mo_remain=#{gongdan.moRemain},product_name=#{gongdan.product_name},pn=#{gongdan.pn},spec=#{gongdan.spec},gkMo=#{gongdan.gkMo},model=#{gongdan.model}
+        WHERE mo_id=#{moId}
+    </update>
+
+    <select id="selectmoid" resultType="java.lang.String" resultMap="MoResult">
+        SELECT mo_id
+        FROM tb_mo
+    </select>
+
+    <select id="selectByLimitAndOffset" resultMap="MoResult">
+        SELECT  *  FROM tb_mo  LIMIT #{offset}, #{limit}
+    </select>
+
+
+    <select id="selectMoNum" resultType="java.lang.Integer" >
+        SELECT  count(*)  FROM tb_mo
+    </select>
+
+
+
+
+</mapper>

@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.hrms.mapper.StorageMapper">
+    <resultMap type="com.hrms.bean.Storage" id="ResultMap">
+        <result column="mo" property="mo"/>
+        <result column="sn" property="sn"/>
+        <result column="model" property="model"/>
+        <result column="wbox" property="operator"/>
+        <result column="time" property="time"/>
+        <result column="operator" property="operator"/>
+
+        <result column="nbox" property="nbox"/>
+        <result column="stock" property="stock"/>
+        <result column="store_area" property="store_area"/>
+        <result column="num" property="num"/>
+        <!-- association ：配置一对一属性 -->
+        <!-- property:order里面的User属性名 -->
+        <!-- javaType:属性类型 -->
+        <association property="gongdan" javaType="com.hrms.bean.Gongdan">
+            <!-- id:声明主键，表示user_id是关联查询对象的唯一标识-->
+            <id column="mo_id" property="moId"></id>
+            <result column="model" property="model"></result>
+            <result column="mo_num" property="moNum"></result>
+            <result column="mo_remain" property="moRemain"></result>
+            <result column="mo_remain0" property="moRemain0"></result>
+            <result column="mo_remain1" property="moRemain1"></result>
+            <result column="mo_remain_label" property="moRemainlabel"/>
+            <result column="gkMo" property="gkMo"/>
+            <result column="operator" property="operator"/>
+            <result column="fw" property="fw"/>
+        </association>
+
+    </resultMap>
+
+
+    <!--插入数据库-->
+    <insert id="insertStorage" parameterType="com.hrms.bean.Storage">
+        INSERT INTO
+        tb_storage
+        (mo,model,wbox,num,operator,time,stock,store_area,storageMo,erp)
+        VALUES(#{mo},#{model},#{wbox},#{num},#{operator},NOW(),#{stock},#{store_area},#{storageMo},#{erp})
+    </insert>
+
+    <!--根据工单查询SN-->
+    <select id="selectSNByMo" parameterType="java.lang.String" resultType="com.hrms.bean.Storage">
+        SELECT wbox
+        FROM tb_storage
+        where mo=#{mo}
+        <if test="d!=null and d!=''">
+            AND tb_storage.time BETWEEN #{d}' 00:00:00' AND #{d}' 23:59:59'
+        </if>
+    </select>
+
+
+    <!--查询外箱号是否存在-->
+    <select id="selectWaiExistByStorage" parameterType="java.lang.String" resultType="com.hrms.bean.Storage">
+           SELECT *
+           FROM tb_storage
+           where wbox=#{wbox}
+       </select>
+
+    <!--出货查询使用： 根据外箱号去入库数据库查询mo,model num，fw和仓储位置等信息 -->
+    <select id="selectWaiExist" parameterType="java.lang.String" resultMap="ResultMap">
+      SELECT
+       *
+      FROM
+	    tb_storage s,
+	    tb_mo m
+       WHERE
+	   s.mo = m.mo_id
+       AND s.wbox = #{wbox}
+    </select>
+
+
+    <!--查询工单号是否存在-->
+    <select id="selectMoExist" parameterType="java.lang.String" resultType="com.hrms.bean.Storage">
+        SELECT *
+        FROM tb_storage
+        where mo=#{mo}
+        <if test="d!=null and d!=''">
+            AND tb_storage.time BETWEEN #{d}' 00:00:00' AND #{d}' 23:59:59'
+        </if>
+    </select>
+
+    <select id="selectsnByMo" resultType="com.hrms.bean.Storage">
+        SELECT tb_pack.productionSN sn,tb_storage.model model,tb_storage.mo mo,tb_pack.Nbox_id nbox,tb_storage.wbox wbox,tb_storage.operator operator,tb_storage.time ,stock,store_area
+        FROM tb_pack,tb_storage
+        WHERE tb_storage.mo=#{mo}
+        <if test="d!=null and d!=''">
+            AND tb_storage.time BETWEEN #{d}' 00:00:00' AND #{d}' 23:59:59'
+        </if>
+        AND tb_pack.Wbox_id=tb_storage.wbox
+        AND tb_pack.operation='无'
+
+    </select>
+
+
+    <!--根据入库单查询导出SN号-->
+    <select id="selectsnByStorageMo" resultType="com.hrms.bean.Storage">
+        SELECT p.productionSN sn, s.model model,s.mo mo,p.Nbox_id nbox,s.wbox wbox,s.operator operator,s.time ,s.stock
+        stock,s.store_area store_area
+        FROM tb_cangku as p,tb_storage as s WHERE p.Wbox_id=s.wbox AND s.storageMo=#{storageMo}
+        <if test="d!=null and d!=''">
+            AND s.time BETWEEN #{d}' 00:00:00' AND #{d}' 23:59:59'
+        </if>
+    </select>
+
+
+    <!--出库之后，入库数量更改-->
+    <update id="updateStorageByNum">
+        UPDATE tb_storage
+        SET num = num - #{num}
+        WHERE wbox = #{wbox}
+    </update>
+
+
+    <!--根据入库单，查询出工单-->
+    <select id="selectMoByStorageMo" resultType="java.lang.String">
+       SELECT DISTINCT mo  FROM tb_storage WHERE storageMo=#{storageMo}
+   </select>
+
+    <!--在入库时往成品仓记录表中添加记录-->
+    <insert id="insertRecord">
+        INSERT INTO tb_warehouserecord ( erp,snRecord,snAmount,wboxRecord,wboxAmount,stock,time,operator )
+VALUES
+        (
+                #{erp},
+				#{snRecord},
+                (( #{snRecord} + 0 ) + (
+                        0+ ( SELECT * FROM ( SELECT ifnull( ( SELECT snAmount FROM tb_warehouserecord where erp = #{erp} ORDER BY time desc LIMIT 1 ), 0 ) AS t ) a )
+                )),
+								#{wboxRecord},
+								(( #{wboxRecord} + 0 ) + (
+                        0+ ( SELECT * FROM ( SELECT ifnull( ( SELECT wboxAmount FROM tb_warehouserecord where erp = #{erp} ORDER BY time desc LIMIT 1 ), 0 ) AS t ) a )
+                )),
+								#{stock},
+								NOW(),
+								#{operator}
+        )
+    </insert>
+
+    <!--拆箱和合箱 删除旧入库外箱-->
+    <delete id="deleteByWbox" >
+     delete from  tb_storage where  wbox=#{wbox}
+    </delete>
+
+    <!--出库时，从入库表中根据外箱号查询该外箱号所在的展板信息-->
+    <select id="getStock" parameterType="java.lang.String" resultType="java.lang.String">
+        select store_area from tb_storage where wbox = #{wbox}
+    </select>
+
+    <!-- 拆箱和合箱时，先往记录表中插入数据 -->
+    <select id="selectByWbox" parameterType="java.lang.String" resultType="com.hrms.bean.Storage">
+        select * from tb_storage where wbox = #{wbox}
+    </select>
+</mapper>
